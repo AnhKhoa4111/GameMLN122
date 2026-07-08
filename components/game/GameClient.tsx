@@ -8,9 +8,10 @@ import GameHeader from "@/components/game/GameHeader"
 import GameResultModal from "@/components/game/GameResultModal"
 import ScorePanel from "@/components/game/ScorePanel"
 import StageProgress from "@/components/game/StageProgress"
+import StageDecisionMaker from "@/components/stages/stage-4-decision/StageDecisionMaker"
 import { PLAYER_ID_STORAGE_KEY } from "@/lib/constants/storage"
 import { ROUTES } from "@/lib/constants/routes"
-import { addStageCompletionScore } from "@/lib/scoring/totalScore"
+import { STAGE_COMPLETION_SCORE } from "@/lib/scoring/totalScore"
 import type { Player } from "@/lib/types/player"
 import { FINAL_STAGE } from "@/lib/types/stage"
 
@@ -49,7 +50,7 @@ export default function GameClient() {
     loadPlayer().catch(() => setError("Không thể tải game."))
   }, [router])
 
-  async function completeCurrentStage() {
+  async function completeCurrentStage(earnedScore = STAGE_COMPLETION_SCORE) {
     if (!player) return
     setIsSubmitting(true)
     setError("")
@@ -64,7 +65,7 @@ export default function GameClient() {
         body: JSON.stringify({
           playerId: player.id,
           currentStage: nextStage,
-          score: addStageCompletionScore(player.score),
+          score: player.score + earnedScore,
           finish,
         }),
       })
@@ -88,25 +89,30 @@ export default function GameClient() {
     return <main className="min-h-screen bg-[var(--game-bg)] p-8">Đang tải...</main>
   }
 
+  const isStageFour = player.current_stage === 4
   const completionLabel =
     player.current_stage >= FINAL_STAGE ? "Hoàn thành game" : "Hoàn thành stage"
 
   return (
     <main className="min-h-screen bg-[var(--game-bg)] px-4 py-10 text-[var(--game-white)]">
-      <Card className="mx-auto max-w-3xl">
+      <Card className={`mx-auto ${isStageFour ? "max-w-6xl" : "max-w-3xl"}`}>
         <GameHeader player={player} />
         <StageProgress currentStage={player.current_stage} />
         <ScorePanel player={player} />
 
         {error && <p className="mt-4 font-bold text-red-200">{error}</p>}
 
-        <Button
-          onClick={completeCurrentStage}
-          disabled={isSubmitting || Boolean(player.finish_time)}
-          className="mt-8"
-        >
-          {player.finish_time ? "Đã hoàn thành" : isSubmitting ? "Đang lưu..." : completionLabel}
-        </Button>
+        {isStageFour ? (
+          <StageDecisionMaker onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
+        ) : (
+          <Button
+            onClick={() => completeCurrentStage()}
+            disabled={isSubmitting || Boolean(player.finish_time)}
+            className="mt-8"
+          >
+            {player.finish_time ? "Đã hoàn thành" : isSubmitting ? "Đang lưu..." : completionLabel}
+          </Button>
+        )}
       </Card>
 
       {showResult && player.finish_time && (

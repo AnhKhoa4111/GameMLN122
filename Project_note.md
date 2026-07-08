@@ -445,3 +445,29 @@ Side effects:
 - Admin leaderboard now shows completion duration as minutes.
 - Player score panel and finish modal now show completion duration as minutes.
 - Leaderboard ranking now sorts by score descending, then lower completion duration when scores are tied.
+
+### 2026-07-09 - Stage 4 decision maker
+
+- Implemented Stage 4 as `PHONG 4 - Ho So Viet Nam`, a decision-maker game where the player acts as a minister reviewing investment cases.
+- Added Stage 4 content in `lib/data/stage4Decisions.ts`.
+- Added Stage 4 scoring in `lib/scoring/scoreStage4.ts`.
+- Added Stage 4 UI in `components/stages/stage-4-decision/StageDecisionMaker.tsx`.
+- `GameClient` now renders Stage 4 when `player.current_stage === 4`.
+- Stage 4 has 3 fictional company cases:
+  - `Aurora Industrial Finance`: industrial supply chain investment; correct decision is full approval.
+  - `HeliosPay Global`: bank, e-wallet, data, fintech expansion; correct decision is conditional approval.
+  - `Titan Frontier Fund`: offshore fund seeking control of logistics and strategic minerals; correct decision is rejection.
+- Stage 4 teaches the Chapter 4 theme: financial capital can support industrialization, but Vietnam must protect data, strategic infrastructure, resources, and national economic sovereignty.
+- Stage 4 score is `30` points per correct case plus `10` bonus points for a perfect run.
+- Completing Stage 4 saves the earned score and advances the player to Stage 5.
+- `npm run build` passed after this change.
+
+### 2026-07-09 - Stage 4 compact viral-card revision
+
+- Reduced visible text in Stage 4 so players see quick cards instead of long dossiers.
+- Replaced the first Stage 4 companies with fictional, TikTok-style parody companies:
+  - `Cu Xanh Academy`: viral language-learning app style; correct decision is conditional approval.
+  - `Deal Soc Mall`: flash-sale marketplace style; correct decision is conditional approval.
+  - `IdolPay Live`: livestream, donate, e-wallet, consumer-credit style; correct decision is rejection.
+- Stage 4 now shows a headline, fast info chips, one key benefit, one key risk, and reveals the short explanation only after the player chooses.
+- `npm run build` passed after this revision.
