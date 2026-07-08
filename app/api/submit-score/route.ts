@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const { playerId, score, currentStage, finish } = await req.json()
 
     if (!playerId) {
-      return NextResponse.json({ error: "Missing playerId" }, { status: 400 })
+      return NextResponse.json({ error: "Thiếu playerId" }, { status: 400 })
     }
 
     const player = await getPlayer(playerId)
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const nextStage = Number(currentStage ?? player.current_stage)
     const totalScore = Number(score ?? player.score)
-    const shouldFinish = Boolean(finish) || nextStage >= FINAL_STAGE
+    const shouldFinish = Boolean(finish)
 
     const updated = await updatePlayerProgress({
       playerId,

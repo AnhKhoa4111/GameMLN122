@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isValidAdminCode } from "@/lib/server/adminAuth"
 import { startGame } from "@/lib/server/gameStore"
 
 export async function POST(req: NextRequest) {
   try {
     const { adminCode } = await req.json()
-    const expectedCode = process.env.ADMIN_CODE ?? process.env.HOST_CODE ?? "admin"
 
-    if (String(adminCode ?? "") !== expectedCode) {
+    if (!isValidAdminCode(adminCode)) {
       return NextResponse.json({ error: "Mã admin không đúng" }, { status: 403 })
     }
 
