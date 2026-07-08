@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import type { Player } from "@/lib/types/player"
 import { FINAL_STAGE } from "@/lib/types/stage"
 import StageTimeline from "@/components/stages/stage-1-timeline/StageTimeline"
+import StageCaseScanner from "@/components/stages/stage-2-scanner/StageCaseScanner"
+import StageControllerFinder from "@/components/stages/stage-3-controller/StageControllerFinder"
 
 const PLAYER_ID_KEY = "mln122-player-id"
 const GAME_DURATION_MS = 20 * 60 * 1000
@@ -235,7 +237,21 @@ export default function GamePage() {
         />
       )}
 
-      {player.current_stage > 1 && !player.finish_time && !timerInfo.isTimeUp && (
+      {player.current_stage === 2 && !timerInfo.isTimeUp && (
+        <StageCaseScanner
+          onCompleted={submitStageScore}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {player.current_stage === 3 && !timerInfo.isTimeUp && (
+        <StageControllerFinder
+          onCompleted={submitStageScore}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {player.current_stage > 3 && !player.finish_time && !timerInfo.isTimeUp && (
         <section className="mx-auto max-w-3xl px-4 py-10">
           <div className="bg-[var(--game-bg-dark)] p-8 text-center shadow-[8px_8px_0px_rgba(0,0,0,0.25)]">
             <p className="text-sm font-black uppercase tracking-[0.24em] text-[var(--game-yellow)]">
