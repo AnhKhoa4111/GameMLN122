@@ -9,6 +9,7 @@ import GameResultModal from "@/components/game/GameResultModal"
 import ScorePanel from "@/components/game/ScorePanel"
 import StageProgress from "@/components/game/StageProgress"
 import StageDecisionMaker from "@/components/stages/stage-4-decision/StageDecisionMaker"
+import StageBoss from "@/components/stages/stage-5-boss/StageBoss"
 import { PLAYER_ID_STORAGE_KEY } from "@/lib/constants/storage"
 import { ROUTES } from "@/lib/constants/routes"
 import { STAGE_COMPLETION_SCORE } from "@/lib/scoring/totalScore"
@@ -89,21 +90,30 @@ export default function GameClient() {
     return <main className="min-h-screen bg-[var(--game-bg)] p-8">Đang tải...</main>
   }
 
-  const isStageFour = player.current_stage === 4
+  const isWideStage = player.current_stage === 4 || player.current_stage === FINAL_STAGE
   const completionLabel =
     player.current_stage >= FINAL_STAGE ? "Hoàn thành game" : "Hoàn thành stage"
 
   return (
     <main className="min-h-screen bg-[var(--game-bg)] px-4 py-10 text-[var(--game-white)]">
-      <Card className={`mx-auto ${isStageFour ? "max-w-6xl" : "max-w-3xl"}`}>
+      <Card className={`mx-auto ${isWideStage ? "max-w-6xl" : "max-w-3xl"}`}>
         <GameHeader player={player} />
         <StageProgress currentStage={player.current_stage} />
         <ScorePanel player={player} />
 
         {error && <p className="mt-4 font-bold text-red-200">{error}</p>}
 
-        {isStageFour ? (
+        {player.finish_time ? (
+          <div className="mt-8 border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] p-5 text-center">
+            <p className="text-2xl font-black text-[var(--game-yellow)]">Bạn đã hoàn thành game</p>
+            <p className="mt-2 font-bold text-white/80">
+              Kết quả đã được lưu. Bạn có thể xem lại điểm và thời gian ở bảng xếp hạng.
+            </p>
+          </div>
+        ) : player.current_stage === 4 ? (
           <StageDecisionMaker onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
+        ) : player.current_stage === FINAL_STAGE ? (
+          <StageBoss onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
         ) : (
           <Button
             onClick={() => completeCurrentStage()}

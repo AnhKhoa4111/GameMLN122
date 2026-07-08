@@ -471,3 +471,26 @@ Side effects:
   - `IdolPay Live`: livestream, donate, e-wallet, consumer-credit style; correct decision is rejection.
 - Stage 4 now shows a headline, fast info chips, one key benefit, one key risk, and reveals the short explanation only after the player chooses.
 - `npm run build` passed after this revision.
+
+### 2026-07-09 - Stage 5 Boss Room
+
+- Implemented Stage 5 as `Phong Quyet Dinh Quoc Gia`, the final Boss Room.
+- Added Stage 5 policy data in `lib/data/stage5Policies.ts`.
+- Added Stage 5 scoring in `lib/scoring/scoreStage5.ts`.
+- Added Stage 5 UI in `components/stages/stage-5-boss/StageBoss.tsx`.
+- `GameClient` now renders Stage 5 when `player.current_stage === 5`.
+- Boss Room rules:
+  - Player sees 8 policy cards.
+  - Player must select exactly 4 cards.
+  - Player can confirm only once.
+  - Cards reveal one by one after confirmation.
+  - Each correct card gives 25 points.
+  - Selecting all 4 correct cards gives a perfect bonus score of 200.
+- Correct policy set:
+  - `Thu hut FDI co chon loc`
+  - `Phat trien doanh nghiep trong nuoc`
+  - `Chong doc quyen`
+  - `Bao ve du lieu tai chinh`
+- Completing Stage 5 calls submit-score with `finish: true`, so `finish_time` is saved.
+- If a player reloads after finishing, `GameClient` shows a completed state and does not allow submitting Boss Room again.
+- `npm run build` passed after clearing stale `.next` cache.
