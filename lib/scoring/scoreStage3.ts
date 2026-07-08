@@ -15,14 +15,16 @@ export function scoreStage3({
     }
   }
 
-  let score = 70
+  let score = 50
 
   if (flippedCount <= 4) {
     score = 100
-  } else if (flippedCount <= 6) {
+  } else if (flippedCount === 5) {
     score = 85
-  } else {
+  } else if (flippedCount === 6) {
     score = 70
+  } else {
+    score = 50
   }
 
   return {
