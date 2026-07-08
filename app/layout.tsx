@@ -2,14 +2,21 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-    title: "GIẢI CỨU VIỆT NAM — Escape Room Kinh Tế",
-    description: "Trò chơi học thuật về Tư bản Tài chính & Quyền lực Mềm của Độc quyền",
+  title: "Giải Mã Tư Bản",
+  description:
+    "Trò chơi học thuật về tư bản tài chính, độc quyền và chủ quyền kinh tế Việt Nam.",
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html lang="vi">
-            <body className="min-h-screen bg-gray-950">{children}</body>
-        </html>
-    )
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="vi">
+      <body className="min-h-screen bg-[var(--game-bg)] text-[var(--game-white)] antialiased">
+        {children}
+      </body>
+    </html>
+  )
 }

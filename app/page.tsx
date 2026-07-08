@@ -1,55 +1,64 @@
 ﻿"use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 export default function HomePage() {
   const router = useRouter()
+  const [playerName, setPlayerName] = useState("")
 
-  async function joinTeam(id: number) {
-    await fetch("/api/team-join", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        teamId: id,
-        teamName: `Bàn ${id}`,
-      }),
-    })
+  const handleJoinGame = () => {
+    const name = playerName.trim()
 
-    router.push(`/game?team=${id}`)
+    if (!name) {
+      alert("Vui lòng nhập tên của bạn!")
+      return
+    }
+
+    localStorage.setItem("playerName", name)
+    router.push("/lobby")
   }
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center px-6 py-16">
-      <div className="max-w-3xl w-full rounded-3xl border border-gray-800 bg-gray-900/80 p-10 shadow-2xl backdrop-blur">
-        <div className="mb-8 text-center">
-          <p className="text-sm uppercase tracking-[0.3em] text-yellow-400">
-            Giải cứu Việt Nam
-          </p>
+    <main className="flex min-h-screen items-center justify-center bg-[var(--game-bg)] px-4">
+      <div className="flex w-full max-w-[520px] flex-col items-center">
+        <h1 className="max-w-4xl text-center font-extrabold leading-[0.95] tracking-tight text-black">
+          <span className="mb-3 block text-[42px] leading-none text-[#FFC857] drop-shadow-[4px_4px_0px_rgba(0,0,0,0.25)] md:text-[56px]">
+            GIẢI MÃ
+          </span>
 
-          <h1 className="mt-4 text-4xl font-black">
-            Escape Room Kinh Tế
-          </h1>
+          <span className="relative mt-4 inline-block text-[64px] leading-none tracking-[-0.06em] text-[var(--game-white)] md:text-[96px]">
+            <span className="relative z-10">TƯ BẢN</span>
+            <span className="absolute bottom-2 left-1 right-1 z-0 h-5 rounded-full bg-[#FFC857] md:h-7" />
+          </span>
+        </h1>
 
-          <p className="mt-4 text-gray-400 leading-relaxed">
-            Chọn đội của bạn và bắt đầu hành trình giải mã để bảo vệ Việt Nam khỏi bẫy tư bản tài chính và quyền lực mềm.
-          </p>
-        </div>
+        <div className="w-full max-w-[420px] bg-[var(--game-bg-dark)] px-12 py-10 shadow-[8px_8px_0px_rgba(0,0,0,0.25)]">
+          <div className="space-y-4">
+            <label className="block text-center text-lg font-bold text-[var(--game-white)]">
+              Nhập tên của bạn
+            </label>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[1, 2, 3].map((id) => (
+            <input
+              value={playerName}
+              onChange={(event) => setPlayerName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  handleJoinGame()
+                }
+              }}
+              maxLength={20}
+              placeholder="Ví dụ: An"
+              className="w-full border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] px-4 py-3 text-center text-lg font-bold text-[var(--game-white)] outline-none placeholder:text-white/70 focus:bg-[var(--game-bg-focus)]"
+            />
+
             <button
-              key={id}
-              onClick={() => joinTeam(id)}
-              className="rounded-3xl border border-gray-800 bg-gray-950 px-4 py-6 text-center transition hover:border-red-500 hover:bg-gray-900"
+              onClick={handleJoinGame}
+              className="w-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] py-3 text-lg font-black text-[var(--game-bg-dark)] shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-colors duration-200 hover:bg-[var(--game-yellow-hover)]"
             >
-              <div className="text-2xl font-black">Bàn {id}</div>
-              <p className="mt-2 text-sm text-gray-400">
-                Bắt đầu ngay với đội {id}.
-              </p>
+              Vào trò chơi!
             </button>
-          ))}
+          </div>
         </div>
       </div>
     </main>
