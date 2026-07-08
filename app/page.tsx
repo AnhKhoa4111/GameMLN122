@@ -1,22 +1,49 @@
-﻿"use client"
+"use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
+const PLAYER_ID_KEY = "mln122-player-id"
+const PLAYER_NAME_KEY = "mln122-player-name"
+
 export default function HomePage() {
   const router = useRouter()
   const [playerName, setPlayerName] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleJoinGame = () => {
+  async function handleJoinGame() {
     const name = playerName.trim()
 
-    if (!name) {
-      alert("Vui lòng nhập tên của bạn!")
+    if (name.length < 2) {
+      setError("Vui lòng nhập tên ít nhất 2 ký tự.")
       return
     }
 
-    localStorage.setItem("playerName", name)
-    router.push("/lobby")
+    setIsSubmitting(true)
+    setError("")
+
+    try {
+      const response = await fetch("/api/join-lobby", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerName: name }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error ?? "Không thể vào lobby.")
+        return
+      }
+
+      localStorage.setItem(PLAYER_ID_KEY, data.player.id)
+      localStorage.setItem(PLAYER_NAME_KEY, data.player.player_name)
+      router.push("/lobby")
+    } catch {
+      setError("Không thể kết nối database.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -52,11 +79,14 @@ export default function HomePage() {
               className="w-full border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] px-4 py-3 text-center text-lg font-bold text-[var(--game-white)] outline-none placeholder:text-white/70 focus:bg-[var(--game-bg-focus)]"
             />
 
+            {error && <p className="text-center text-sm font-bold text-red-200">{error}</p>}
+
             <button
               onClick={handleJoinGame}
-              className="w-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] py-3 text-lg font-black text-[var(--game-bg-dark)] shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-colors duration-200 hover:bg-[var(--game-yellow-hover)]"
+              disabled={isSubmitting}
+              className="w-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] py-3 text-lg font-black text-[var(--game-bg-dark)] shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-colors duration-200 hover:bg-[var(--game-yellow-hover)] disabled:cursor-wait disabled:opacity-70"
             >
-              Vào trò chơi!
+              {isSubmitting ? "Đang vào lobby..." : "Vào trò chơi!"}
             </button>
           </div>
         </div>
