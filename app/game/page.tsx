@@ -129,7 +129,7 @@ export default function GamePage() {
     )
 
     if (!player || isSubmitting || alreadyCompleted) return
-    
+
     if (timerInfo.isTimeUp) {
       setError("Đã hết thời gian, không thể lưu điểm mới.")
       return
