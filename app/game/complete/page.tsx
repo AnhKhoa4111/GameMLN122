@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { APP_ROUTES } from "@/lib/constants/routes"
+import { PLAYER_ID_KEY } from "@/lib/constants/storage"
 import type { Player } from "@/lib/types/player"
-
-const PLAYER_ID_KEY = "mln122-player-id"
+import { formatDurationMinutes } from "@/lib/utils"
 
 export default function GameCompletePage() {
     const router = useRouter()
@@ -15,22 +16,20 @@ export default function GameCompletePage() {
         const playerId = localStorage.getItem(PLAYER_ID_KEY)
 
         if (!playerId) {
-            router.push("/")
+            router.push(APP_ROUTES.home)
             return
         }
 
         async function loadPlayer() {
-            const response = await fetch("/api/lobby-state")
+            const response = await fetch(`/api/player-state?id=${playerId}`)
             const data = await response.json()
 
-            const found = data.players?.find((item: Player) => item.id === playerId)
-
-            if (!found) {
-                router.push("/")
+            if (!response.ok || !data.player) {
+                router.push(APP_ROUTES.home)
                 return
             }
 
-            setPlayer(found)
+            setPlayer(data.player)
         }
 
         loadPlayer().catch(() => setError("Không thể tải kết quả."))
@@ -99,6 +98,16 @@ export default function GameCompletePage() {
                     </p>
 
                     <p className="mt-2 text-2xl font-black">{player.player_name}</p>
+                </div>
+
+                <div className="mt-4 rounded-[22px] border-4 border-white/30 bg-black/20 p-4">
+                    <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--game-yellow)]">
+                        Thời gian hoàn thành
+                    </p>
+
+                    <p className="mt-2 text-2xl font-black">
+                        {formatDurationMinutes(player.start_time, player.finish_time)}
+                    </p>
                 </div>
 
                 <p className="mt-6 text-lg font-black text-white">

@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/server/supabase"
 import type { Player } from "@/lib/types/player"
 import { FIRST_STAGE } from "@/lib/types/stage"
+import { getElapsedMilliseconds } from "@/lib/utils"
 
 export async function createPlayer(playerName: string): Promise<Player> {
   const { data, error } = await supabase
@@ -34,11 +35,41 @@ export async function getPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
     .select()
-    .order("score", { ascending: false })
-    .order("finish_time", { ascending: true, nullsFirst: false })
 
   if (error) throw error
-  return (data as Player[]) ?? []
+  return ((data as Player[]) ?? []).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+
+    const durationA = getElapsedMilliseconds(a.start_time, a.finish_time)
+    const durationB = getElapsedMilliseconds(b.start_time, b.finish_time)
+
+    if (durationA === null && durationB === null) return 0
+    if (durationA === null) return 1
+    if (durationB === null) return -1
+
+    return durationA - durationB
+  })
+}
+
+export async function setPlayerStartTime({
+  playerId,
+  startTime,
+}: {
+  playerId: string
+  startTime: number
+}): Promise<Player> {
+  const { data, error } = await supabase
+    .from("players")
+    .update({
+      start_time: startTime,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", playerId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as Player
 }
 
 export async function updatePlayerProgress({
