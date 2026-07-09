@@ -56,6 +56,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_CODE=
+NEXT_PUBLIC_GAME_DURATION_MINUTES=20
 ```
 
 Supabase client location:
@@ -79,6 +80,7 @@ Important:
 
 - Prefer setting `ADMIN_CODE` in `.env.local`.
 - Prefer setting `SUPABASE_SERVICE_ROLE_KEY` for server-side API routes if RLS policies are not ready.
+- `NEXT_PUBLIC_GAME_DURATION_MINUTES` controls the in-game countdown. It defaults to 20 minutes if missing.
 - Do not expose real `.env.local` values in chat or committed docs.
 
 ## Supabase Schema
@@ -366,8 +368,9 @@ Side effects:
 - The database is the source of truth for player list, score, current stage, start time, and finish time.
 - `localStorage` is only a convenience to remember the current player's id/name on the same device/browser.
 - On app entry, saved localStorage player id is validated against Supabase before routing.
-- The current game UI is a minimal prototype: one button adds 100 score and advances the stage.
-- The stage data/scoring/component files are intentionally present but currently empty placeholders.
+- The current game UI renders real Stage 1-5 components from `components/stages/*`.
+- Stage data, scoring, and component files are implemented for Stage 1-5.
+- `GameCountdown` shows a visible game-wide countdown from `player.start_time`. The countdown defaults to 20 minutes, changes color by remaining time, hides playable stages when time is up, and blocks new score submissions after expiry.
 - Pages in `app/*/page.tsx` should stay thin. Put feature UI/state in `components/<domain>`.
 - API routes should stay thin. Put database logic in `lib/server/*`.
 - Shared browser constants should live in `lib/constants/*`.
@@ -376,11 +379,7 @@ Side effects:
 ## Known Issues / Follow-Ups
 
 - Mojibake Vietnamese strings were cleaned from active pages/components/API routes during the folder-structure refactor. Re-check any newly pasted text before committing.
-- Several placeholder files are empty:
-  - `components/stages/*`
-  - `lib/data/*`
-  - `lib/scoring/scoreStage*.ts`
-  - `lib/types/score.ts`
+- `lib/types/score.ts` is still an empty placeholder.
 - `@vercel/kv` remains in dependencies but is not used by active code.
 - `README.md` is minimal and does not explain setup.
 - Admin code currently falls back to `"admin"` if no env var exists; good for local dev, weak for real classroom use.
@@ -494,3 +493,13 @@ Side effects:
 - Completing Stage 5 calls submit-score with `finish: true`, so `finish_time` is saved.
 - If a player reloads after finishing, `GameClient` shows a completed state and does not allow submitting Boss Room again.
 - `npm run build` passed after clearing stale `.next` cache.
+
+### 2026-07-09 - Reconnect Stage 1-3 and countdown
+
+- Checked the pasted countdown code: it had a real 20-minute countdown (`GAME_DURATION_MS = 20 * 60 * 1000`), 1-second interval updates, color/status thresholds, and submit blocking when time is up.
+- Added `components/game/GameCountdown.tsx` and `lib/constants/game.ts`.
+- Added optional env config `NEXT_PUBLIC_GAME_DURATION_MINUTES=20` to `.env.example`.
+- `GameClient` now renders the shared countdown under `StageProgress`.
+- `GameClient` now renders Stage 1, Stage 2, and Stage 3 real components instead of falling back to the old prototype completion button.
+- When the countdown reaches `00:00`, playable stages are hidden and new score submissions are blocked with a time-up error.
+- `npm run build` passed after this change.

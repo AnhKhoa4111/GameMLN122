@@ -1,15 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
+import GameCountdown, {
+  getGameCountdownInfo,
+} from "@/components/game/GameCountdown"
 import GameHeader from "@/components/game/GameHeader"
 import GameResultModal from "@/components/game/GameResultModal"
 import ScorePanel from "@/components/game/ScorePanel"
 import StageProgress from "@/components/game/StageProgress"
+import StageTimeline from "@/components/stages/stage-1-timeline/StageTimeline"
+import StageCaseScanner from "@/components/stages/stage-2-scanner/StageCaseScanner"
+import StageControllerFinder from "@/components/stages/stage-3-controller/StageControllerFinder"
 import StageDecisionMaker from "@/components/stages/stage-4-decision/StageDecisionMaker"
 import StageBoss from "@/components/stages/stage-5-boss/StageBoss"
+import { GAME_DURATION_MS } from "@/lib/constants/game"
 import { PLAYER_ID_STORAGE_KEY } from "@/lib/constants/storage"
 import { ROUTES } from "@/lib/constants/routes"
 import { STAGE_COMPLETION_SCORE } from "@/lib/scoring/totalScore"
@@ -22,6 +29,7 @@ export default function GameClient() {
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const [remainingMs, setRemainingMs] = useState(GAME_DURATION_MS)
 
   useEffect(() => {
     const playerId = localStorage.getItem(PLAYER_ID_STORAGE_KEY)
@@ -51,8 +59,35 @@ export default function GameClient() {
     loadPlayer().catch(() => setError("Không thể tải game."))
   }, [router])
 
+  useEffect(() => {
+    if (!player?.start_time || player.finish_time) return
+
+    function updateTimer() {
+      const endTime = Number(player?.start_time) + GAME_DURATION_MS
+      const remaining = Math.max(endTime - Date.now(), 0)
+      setRemainingMs(remaining)
+    }
+
+    updateTimer()
+
+    const timer = window.setInterval(updateTimer, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [player?.finish_time, player?.start_time])
+
+  const timerInfo = useMemo(
+    () => getGameCountdownInfo(remainingMs, GAME_DURATION_MS),
+    [remainingMs]
+  )
+
   async function completeCurrentStage(earnedScore = STAGE_COMPLETION_SCORE) {
     if (!player) return
+
+    if (timerInfo.isTimeUp && !player.finish_time) {
+      setError("Da het thoi gian, khong the luu diem moi.")
+      return
+    }
+
     setIsSubmitting(true)
     setError("")
 
@@ -90,7 +125,8 @@ export default function GameClient() {
     return <main className="min-h-screen bg-[var(--game-bg)] p-8">Đang tải...</main>
   }
 
-  const isWideStage = player.current_stage === 4 || player.current_stage === FINAL_STAGE
+  const isPlayableStage = player.current_stage >= 1 && player.current_stage <= FINAL_STAGE
+  const isWideStage = isPlayableStage
   const completionLabel =
     player.current_stage >= FINAL_STAGE ? "Hoàn thành game" : "Hoàn thành stage"
 
@@ -99,9 +135,18 @@ export default function GameClient() {
       <Card className={`mx-auto ${isWideStage ? "max-w-6xl" : "max-w-3xl"}`}>
         <GameHeader player={player} />
         <StageProgress currentStage={player.current_stage} />
+        <GameCountdown timerInfo={timerInfo} />
         <ScorePanel player={player} />
 
         {error && <p className="mt-4 font-bold text-red-200">{error}</p>}
+
+        {timerInfo.isTimeUp && !player.finish_time && (
+          <div className="mt-6 border-4 border-red-300 bg-red-600/40 p-4 text-center">
+            <p className="text-xl font-black text-red-100">
+              Het gio! Vui long cho admin xem bang diem.
+            </p>
+          </div>
+        )}
 
         {player.finish_time ? (
           <div className="mt-8 border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] p-5 text-center">
@@ -110,6 +155,12 @@ export default function GameClient() {
               Kết quả đã được lưu. Bạn có thể xem lại điểm và thời gian ở bảng xếp hạng.
             </p>
           </div>
+        ) : timerInfo.isTimeUp ? null : player.current_stage === 1 ? (
+          <StageTimeline onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
+        ) : player.current_stage === 2 ? (
+          <StageCaseScanner onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
+        ) : player.current_stage === 3 ? (
+          <StageControllerFinder onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
         ) : player.current_stage === 4 ? (
           <StageDecisionMaker onCompleted={completeCurrentStage} isSubmitting={isSubmitting} />
         ) : player.current_stage === FINAL_STAGE ? (
