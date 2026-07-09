@@ -66,10 +66,6 @@ export default function GameCompletePage() {
                     🏆
                 </div>
 
-                <p className="mt-6 text-sm font-black uppercase tracking-[0.26em] text-[var(--game-yellow)]">
-                    Mission Complete
-                </p>
-
                 <h1 className="mt-4 text-4xl font-black uppercase leading-tight text-[var(--game-yellow)] md:text-6xl">
                     Hoàn thành game!
                 </h1>

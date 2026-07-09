@@ -173,7 +173,7 @@ export default function StageCaseScanner({
         <div className="fade-up mx-auto inline-flex items-center gap-2 border-4 border-[var(--game-white)] bg-[var(--game-bg-dark)] px-4 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]">
           <span className="animate-bounce text-xl">🗂️</span>
           <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-            Stage 2
+            Màn 2
           </p>
           <span className="animate-bounce text-xl [animation-delay:0.2s]">
             📡
@@ -242,7 +242,6 @@ export default function StageCaseScanner({
             </div>
 
             <div className="relative shrink-0 border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] px-3 py-1.5 text-center shadow-[3px_3px_0px_rgba(0,0,0,0.25)]">
-              <span className="absolute -right-2 -top-2 text-xl">⚡</span>
               <p className="text-[10px] font-black uppercase text-white/70">
                 Tiến độ
               </p>
@@ -321,8 +320,8 @@ export default function StageCaseScanner({
                   {isScanning
                     ? "ĐANG QUÉT..."
                     : isScanned
-                      ? "SCAN COMPLETE"
-                      : "SCAN READY"}
+                      ? "QUÉT XONG"
+                      : "SẴN SÀNG QUÉT"}
                 </p>
 
                 <div className="mt-2 h-3 overflow-hidden rounded-full border-2 border-[var(--game-white)] bg-black/30">
@@ -377,7 +376,6 @@ export default function StageCaseScanner({
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-4 border-[var(--game-white)] bg-[var(--game-yellow)] text-lg text-[var(--game-bg-dark)]">
                       {optionIcons[optionIndex] ?? "🔎"}
                     </span>
-
                     <span className="leading-relaxed">{option.label}</span>
                   </div>
                 </button>
@@ -396,7 +394,7 @@ export default function StageCaseScanner({
           ) : (
             <div className="stage-pop mt-3 rounded-[18px] border-4 border-[var(--game-white)] bg-white/10 p-3 text-center">
               <p className="text-sm font-black text-[var(--game-yellow)]">
-                Kết quả scan đang hiển thị
+                Kết quả quét đang hiển thị
               </p>
             </div>
           )}
@@ -519,7 +517,7 @@ function ScanResultModal({
           {isSubmitting
             ? "Đang lưu điểm..."
             : isLastCase
-              ? "Xem điểm Stage 2"
+              ? "Xem điểm Màn 2"
               : "Hồ sơ tiếp theo ➜"}
         </button>
       </div>
@@ -565,7 +563,7 @@ function Stage2CompleteModal({
         </div>
 
         <p className="relative text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-          Hoàn thành Stage 2
+          Hoàn thành Màn 2
         </p>
 
         <h2 className="relative mt-2 text-2xl font-black uppercase leading-tight text-[var(--game-white)] md:text-3xl">
@@ -608,7 +606,7 @@ function Stage2CompleteModal({
           </p>
         ) : (
           <p className="relative mt-3 rounded-2xl bg-white/10 px-3 py-2 text-sm font-semibold text-white/80">
-            Bạn đã hoàn thành điều tra. Tiếp tục sang Stage 3 để mở khóa thử
+            Bạn đã hoàn thành điều tra. Tiếp tục sang Màn 3 để mở khóa thử
             thách tiếp theo!
           </p>
         )}
@@ -619,7 +617,7 @@ function Stage2CompleteModal({
           disabled={isSubmitting}
           className="relative mt-4 w-full rounded-[18px] border-4 border-[var(--game-white)] bg-[var(--game-yellow)] py-3 text-base font-black uppercase text-[var(--game-bg-dark)] shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition hover:-translate-y-1 hover:bg-[var(--game-yellow-hover)] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Đang lưu điểm..." : "Sang Stage 3 ➜"}
+          {isSubmitting ? "Đang lưu điểm..." : "Sang Màn 3 ➜"}
         </button>
       </div>
     </div>

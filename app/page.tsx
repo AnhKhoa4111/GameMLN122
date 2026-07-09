@@ -86,7 +86,7 @@ export default function HomePage() {
               disabled={isSubmitting}
               className="w-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] py-3 text-lg font-black text-[var(--game-bg-dark)] shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-colors duration-200 hover:bg-[var(--game-yellow-hover)] disabled:cursor-wait disabled:opacity-70"
             >
-              {isSubmitting ? "Đang vào lobby..." : "Vào trò chơi!"}
+              {isSubmitting ? "Đang vào phòng chờ..." : "Vào trò chơi!"}
             </button>
           </div>
         </div>

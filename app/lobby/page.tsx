@@ -67,7 +67,7 @@ export default function LobbyPage() {
         {error && <p className="mt-4 font-bold text-red-200">{error}</p>}
 
         <div className="mt-8">
-          <h2 className="text-xl font-black">Người chơi trong lobby ({players.length})</h2>
+          <h2 className="text-xl font-black">Người chơi trong phòng chờ ({players.length})</h2>
           <div className="mt-4 grid gap-3">
             {players.map((player) => (
               <div

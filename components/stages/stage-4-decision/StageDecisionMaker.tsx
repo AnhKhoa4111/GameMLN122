@@ -114,7 +114,7 @@ export default function StageDecisionMaker({
         <div className="fade-up mx-auto inline-flex items-center gap-2 border-4 border-[var(--game-white)] bg-[var(--game-bg-dark)] px-4 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]">
           <span className="animate-bounce text-xl">🇻🇳</span>
           <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-            Stage 4
+            Màn 4
           </p>
           <span className="animate-bounce text-xl [animation-delay:0.2s]">
             ⚖️
@@ -363,7 +363,7 @@ export default function StageDecisionMaker({
               disabled={!isCaseConfirmed}
               className="mt-3 w-full"
             >
-              {isLastCase ? "Xem điểm Stage 4" : "Hồ sơ tiếp ➜"}
+              {isLastCase ? "Xem điểm Màn 4" : "Hồ sơ tiếp ➜"}
             </Button>
           )}
         </div>
@@ -439,7 +439,7 @@ function Stage4CompleteModal({
         </div>
 
         <p className="relative text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-          Hoàn thành Stage 4
+          Hoàn thành Màn 4
         </p>
 
         <h2 className="relative mt-2 text-2xl font-black uppercase leading-tight text-[var(--game-white)] md:text-3xl">
@@ -468,7 +468,7 @@ function Stage4CompleteModal({
           </p>
         ) : (
           <p className="relative mt-3 rounded-2xl bg-white/10 px-3 py-2 text-sm font-semibold text-white/80">
-            Bạn đã hoàn thành vòng ra quyết định. Tiếp tục sang Stage 5 để bảo
+            Bạn đã hoàn thành vòng ra quyết định. Tiếp tục sang Màn 5 để bảo
             vệ Việt Nam.
           </p>
         )}
@@ -479,7 +479,7 @@ function Stage4CompleteModal({
           disabled={isSubmitting}
           className="relative mt-4 w-full rounded-[18px] border-4 border-[var(--game-white)] bg-[var(--game-yellow)] py-3 text-base font-black uppercase text-[var(--game-bg-dark)] shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition hover:-translate-y-1 hover:bg-[var(--game-yellow-hover)] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Đang lưu điểm..." : "Sang Stage 5 ➜"}
+          {isSubmitting ? "Đang lưu điểm..." : "Sang Màn 5 ➜"}
         </button>
       </div>
     </div>
