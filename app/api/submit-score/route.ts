@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPlayer, updatePlayerProgress } from "@/lib/server/playerStore"
-import { FINAL_STAGE } from "@/lib/types/stage"
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,21 +10,28 @@ export async function POST(req: NextRequest) {
     }
 
     const player = await getPlayer(playerId)
+
     if (!player) {
-      return NextResponse.json({ error: "Không tìm thấy người chơi" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Không tìm thấy người chơi" },
+        { status: 404 }
+      )
     }
 
     if (!player.start_time) {
-      return NextResponse.json({ error: "Game chưa bắt đầu" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Game chưa bắt đầu" },
+        { status: 400 }
+      )
     }
 
     const nextStage = Number(currentStage ?? player.current_stage)
     const totalScore = Number(score ?? player.score)
-    const shouldFinish = Boolean(finish) || nextStage >= FINAL_STAGE
+    const shouldFinish = Boolean(finish)
 
     const updated = await updatePlayerProgress({
       playerId,
-      currentStage: Math.min(nextStage, FINAL_STAGE),
+      currentStage: nextStage,
       score: totalScore,
       finishTime: shouldFinish ? Date.now() : undefined,
     })

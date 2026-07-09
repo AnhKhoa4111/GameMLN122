@@ -7,6 +7,8 @@ import { FINAL_STAGE } from "@/lib/types/stage"
 import StageTimeline from "@/components/stages/stage-1-timeline/StageTimeline"
 import StageCaseScanner from "@/components/stages/stage-2-scanner/StageCaseScanner"
 import StageControllerFinder from "@/components/stages/stage-3-controller/StageControllerFinder"
+import StageDecisionMaker from "@/components/stages/stage-4-decision/StageDecisionMaker"
+import StageBoss from "@/components/stages/stage-5-boss/StageBoss"
 
 const PLAYER_ID_KEY = "mln122-player-id"
 const GAME_DURATION_MS = 20 * 60 * 1000
@@ -117,9 +119,17 @@ export default function GamePage() {
     }
   }, [remainingMs])
 
-  async function submitStageScore(stageScore: number) {
-    if (!player) return
+  const isGameCompleted = Boolean(
+    player?.finish_time && player.current_stage > FINAL_STAGE
+  )
 
+  async function submitStageScore(stageScore: number) {
+    const alreadyCompleted = Boolean(
+      player?.finish_time && player.current_stage > FINAL_STAGE
+    )
+
+    if (!player || isSubmitting || alreadyCompleted) return
+    
     if (timerInfo.isTimeUp) {
       setError("Đã hết thời gian, không thể lưu điểm mới.")
       return
@@ -129,8 +139,8 @@ export default function GamePage() {
     setError("")
 
     const currentStage = player.current_stage
-    const nextStage = Math.min(currentStage + 1, FINAL_STAGE)
-    const finish = currentStage >= FINAL_STAGE
+    const finish = currentStage === FINAL_STAGE
+    const nextStage = finish ? FINAL_STAGE + 1 : currentStage + 1
     const newTotalScore = player.score + stageScore
 
     try {
@@ -153,6 +163,10 @@ export default function GamePage() {
       }
 
       setPlayer(data.player)
+
+      if (finish) {
+        router.push("/game/complete")
+      }
     } catch {
       setError("Không thể kết nối database.")
     } finally {
@@ -230,59 +244,68 @@ export default function GamePage() {
         </div>
       )}
 
-      {player.current_stage === 1 && !timerInfo.isTimeUp && (
+      {player.current_stage === 1 && !timerInfo.isTimeUp && !isGameCompleted && (
         <StageTimeline
           onCompleted={submitStageScore}
           isSubmitting={isSubmitting}
         />
       )}
 
-      {player.current_stage === 2 && !timerInfo.isTimeUp && (
+      {player.current_stage === 2 && !timerInfo.isTimeUp && !isGameCompleted && (
         <StageCaseScanner
           onCompleted={submitStageScore}
           isSubmitting={isSubmitting}
         />
       )}
 
-      {player.current_stage === 3 && !timerInfo.isTimeUp && (
+      {player.current_stage === 3 && !timerInfo.isTimeUp && !isGameCompleted && (
         <StageControllerFinder
           onCompleted={submitStageScore}
           isSubmitting={isSubmitting}
         />
       )}
 
-      {player.current_stage > 3 && !player.finish_time && !timerInfo.isTimeUp && (
-        <section className="mx-auto max-w-3xl px-4 py-10">
-          <div className="bg-[var(--game-bg-dark)] p-8 text-center shadow-[8px_8px_0px_rgba(0,0,0,0.25)]">
-            <p className="text-sm font-black uppercase tracking-[0.24em] text-[var(--game-yellow)]">
-              Stage {player.current_stage}
-            </p>
-
-            <h1 className="mt-3 text-4xl font-black">Stage này sẽ code sau</h1>
-
-            <p className="mt-3 text-white/80">
-              Tạm thời nút này dùng để test lưu điểm và chuyển stage.
-            </p>
-
-            <button
-              onClick={completeTestStage}
-              disabled={isSubmitting}
-              className="mt-8 border-4 border-[var(--game-white)] bg-[var(--game-yellow)] px-6 py-3 font-black text-[var(--game-bg-dark)] disabled:opacity-60"
-            >
-              {isSubmitting ? "Đang lưu..." : "Hoàn thành stage test +100"}
-            </button>
-          </div>
-        </section>
+      {player.current_stage === 4 && !timerInfo.isTimeUp && !isGameCompleted && (
+        <StageDecisionMaker
+          onCompleted={submitStageScore}
+          isSubmitting={isSubmitting}
+        />
       )}
 
-      {player.finish_time && (
+      {player.current_stage === 5 && !timerInfo.isTimeUp && !isGameCompleted && (
+        <StageBoss
+          onCompleted={submitStageScore}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+
+
+      {player.finish_time && player.current_stage > FINAL_STAGE && (
         <section className="mx-auto max-w-3xl px-4 py-10">
-          <div className="bg-[var(--game-bg-dark)] p-8 text-center shadow-[8px_8px_0px_rgba(0,0,0,0.25)]">
-            <h1 className="text-4xl font-black text-[var(--game-yellow)]">
+          <div className="case-enter rounded-[28px] border-4 border-[var(--game-white)] bg-[linear-gradient(135deg,#3f1048,#1b102b)] p-8 text-center shadow-[10px_10px_0px_rgba(0,0,0,0.35)]">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] text-6xl shadow-[5px_5px_0px_rgba(0,0,0,0.35)]">
+              🏆
+            </div>
+
+            <p className="mt-5 text-sm font-black uppercase tracking-[0.24em] text-[var(--game-yellow)]">
+              Mission Complete
+            </p>
+
+            <h1 className="mt-3 text-4xl font-black uppercase text-[var(--game-yellow)]">
               Hoàn thành game!
             </h1>
-            <p className="mt-3 text-xl font-bold">
-              Tổng điểm của bạn: {player.score}
+
+            <p className="mt-4 text-xl font-bold text-white/80">
+              Tổng điểm của bạn
+            </p>
+
+            <p className="mt-2 text-7xl font-black text-[var(--game-yellow)]">
+              {player.score}
+            </p>
+
+            <p className="mt-4 text-lg font-black text-white">
+              Việt Nam đã được bảo vệ 🇻🇳
             </p>
           </div>
         </section>
