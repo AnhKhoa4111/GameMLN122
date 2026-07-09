@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { isValidAdminCode } from "@/lib/server/adminAuth"
+import { verifyAdminRequest } from "@/lib/server/adminAuth"
 import { startGame } from "@/lib/server/gameStore"
 
 export async function POST(req: NextRequest) {
   try {
-    const { adminCode } = await req.json()
+    const admin = await verifyAdminRequest(req)
 
-    if (!isValidAdminCode(adminCode)) {
-      return NextResponse.json({ error: "Mã admin không đúng" }, { status: 403 })
+    if (!admin.ok) {
+      return NextResponse.json({ error: admin.error }, { status: 403 })
     }
 
     const game = await startGame()

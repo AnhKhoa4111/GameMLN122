@@ -21,7 +21,7 @@ export default function GameCountdown({ timerInfo }: GameCountdownProps) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--game-yellow)]">
-            Thoi gian con lai
+            Thời gian còn lại
           </p>
           <p className={`mt-1 text-4xl font-black leading-none ${timerInfo.textColorClass}`}>
             {timerInfo.timeText}
@@ -31,7 +31,7 @@ export default function GameCountdown({ timerInfo }: GameCountdownProps) {
         <div className="text-left md:text-right">
           <p className="text-lg font-black">{timerInfo.statusText}</p>
           <p className="mt-1 text-sm font-bold text-white/75">
-            Tong thoi gian: {GAME_DURATION_MINUTES} phut
+            Tổng thời gian: {GAME_DURATION_MINUTES} phút
           </p>
         </div>
       </div>
@@ -61,30 +61,30 @@ export function getGameCountdownInfo(
 
   let barColorClass = "bg-green-400"
   let textColorClass = "text-green-300"
-  let statusText = "Thoi gian con nhieu"
+  let statusText = "Thời gian còn nhiều"
 
   if (remainingMinutes <= 15 && remainingMinutes > 10) {
     barColorClass = "bg-[var(--game-yellow)]"
     textColorClass = "text-[var(--game-yellow)]"
-    statusText = "Hay tang toc"
+    statusText = "Hãy tăng tốc"
   }
 
   if (remainingMinutes <= 10 && remainingMinutes > 5) {
     barColorClass = "bg-red-500"
     textColorClass = "text-red-300"
-    statusText = "Nguy hiem"
+    statusText = "Nguy hiểm"
   }
 
   if (remainingMinutes <= 5) {
     barColorClass = "bg-red-600 animate-pulse"
     textColorClass = "text-red-300 animate-pulse"
-    statusText = "Sap het thoi gian!"
+    statusText = "Sắp hết thời gian!"
   }
 
   if (remainingMs <= 0) {
     barColorClass = "bg-red-700"
     textColorClass = "text-red-300"
-    statusText = "Da het thoi gian"
+    statusText = "Đã hết thời gian"
   }
 
   return {

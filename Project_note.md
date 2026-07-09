@@ -55,7 +55,7 @@ Expected variables are documented in `.env.example`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-ADMIN_CODE=
+ADMIN_EMAILS=
 NEXT_PUBLIC_GAME_DURATION_MINUTES=20
 ```
 
@@ -70,15 +70,15 @@ process.env.SUPABASE_SERVICE_ROLE_KEY ??
 process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
-Admin code selection in API routes:
+Admin email allowlist selection in API routes:
 
 ```ts
-process.env.ADMIN_CODE ?? process.env.HOST_CODE ?? "admin"
+process.env.ADMIN_EMAILS
 ```
 
 Important:
 
-- Prefer setting `ADMIN_CODE` in `.env.local`.
+- Set `ADMIN_EMAILS` in `.env.local` to a comma-separated allowlist of Gmail/admin emails, for example `ADMIN_EMAILS=you@gmail.com`.
 - Prefer setting `SUPABASE_SERVICE_ROLE_KEY` for server-side API routes if RLS policies are not ready.
 - `NEXT_PUBLIC_GAME_DURATION_MINUTES` controls the in-game countdown. It defaults to 20 minutes if missing.
 - Do not expose real `.env.local` values in chat or committed docs.
@@ -156,6 +156,7 @@ app/
     submit-score/route.ts  # POST: update current_stage/score/finish_time.
     leaderboard/route.ts   # GET: return sorted players.
     reset-game/route.ts    # POST: admin reset; deletes players and resets game_state.
+    admin-login/route.ts   # POST: verifies admin code before showing admin dashboard.
   globals.css              # Tailwind + game CSS variables.
   layout.tsx               # Root layout and metadata.
 
@@ -235,13 +236,16 @@ supabase/
 ### Admin flow
 
 1. Admin opens `/admin`.
-2. Enters admin code from `ADMIN_CODE`, or `HOST_CODE`, or fallback `"admin"`.
-3. Start game posts to `/api/start-game`.
-4. `/api/start-game`:
+2. Admin clicks Google login.
+3. Supabase Auth handles Google OAuth and redirects back to `/admin`.
+4. `/api/admin-login` verifies the Supabase access token and checks the user email against `ADMIN_EMAILS`.
+5. The admin dashboard is shown only when the authenticated email is allowed.
+6. Start game posts to `/api/start-game` with `Authorization: Bearer <supabase_access_token>`.
+7. `/api/start-game` verifies the same token/email, then:
    - Upserts `game_state` with `is_started = true`, `started_at = Date.now()`.
    - Updates all players with `start_time is null` to that same timestamp.
-5. Reset posts to `/api/reset-game`.
-6. `/api/reset-game`:
+8. Reset posts to `/api/reset-game` with the Supabase access token.
+9. `/api/reset-game` verifies the token/email, then:
    - Deletes all players.
    - Resets singleton `game_state` to not started.
 
@@ -286,11 +290,10 @@ Response:
 
 ### `POST /api/start-game`
 
-Request:
+Auth:
 
-```json
-{ "adminCode": "..." }
-```
+- Requires `Authorization: Bearer <supabase_access_token>`.
+- The token user email must be listed in `ADMIN_EMAILS`.
 
 Response:
 
@@ -303,6 +306,24 @@ Side effects:
 - Sets `game_state.is_started`.
 - Sets `game_state.started_at`.
 - Sets `players.start_time` for every player whose `start_time` is null.
+
+### `POST /api/admin-login`
+
+Auth:
+
+- Requires `Authorization: Bearer <supabase_access_token>`.
+- The token user email must be listed in `ADMIN_EMAILS`.
+
+Response:
+
+```json
+{ "ok": true, "email": "admin@gmail.com" }
+```
+
+Rules:
+
+- Rejects with `403` if the token is missing, invalid, or belongs to a non-admin email.
+- Does not start or reset the game; it only unlocks the admin UI after Google login.
 
 ### `POST /api/submit-score`
 
@@ -347,11 +368,10 @@ Sort order comes from `playerStore.getPlayers()`:
 
 ### `POST /api/reset-game`
 
-Request:
+Auth:
 
-```json
-{ "adminCode": "..." }
-```
+- Requires `Authorization: Bearer <supabase_access_token>`.
+- The token user email must be listed in `ADMIN_EMAILS`.
 
 Side effects:
 
@@ -362,8 +382,8 @@ Side effects:
 
 - `current_stage` is the canonical progress name. Do not reintroduce `current_room`.
 - This project no longer uses teams.
-- This project does not use auth/login.
-- Admin is code-gated only.
+- Players do not use auth/login.
+- Admin uses Supabase Auth with Google login. `/admin` shows only a Google login screen until `/api/admin-login` accepts the token and email allowlist, and Start/Reset verify the token server-side.
 - Player identity is browser-local via `localStorage`.
 - The database is the source of truth for player list, score, current stage, start time, and finish time.
 - `localStorage` is only a convenience to remember the current player's id/name on the same device/browser.
@@ -503,3 +523,26 @@ Side effects:
 - `GameClient` now renders Stage 1, Stage 2, and Stage 3 real components instead of falling back to the old prototype completion button.
 - When the countdown reaches `00:00`, playable stages are hidden and new score submissions are blocked with a time-up error.
 - `npm run build` passed after this change.
+
+### 2026-07-09 - Admin page lock
+
+- Added `POST /api/admin-login` to verify the admin code without starting or resetting the game.
+- Updated `AdminClient` so `/admin` first shows a locked password screen and does not load the dashboard, player list, or controls until the code is accepted.
+- Stores the accepted admin code in `sessionStorage["mln122-admin-code"]` for the current browser session and adds a `Khoa admin` button to clear it.
+- Start and Reset still send the admin code to their API routes, so server-side action protection remains in place.
+- `npm run build` passed after adding the admin lock.
+
+### 2026-07-09 - Google admin authentication
+
+- Migrated admin access from local admin code entry to Supabase Auth Google login.
+- Added browser Supabase client in `lib/client/supabase.ts`.
+- Added `ADMIN_EMAILS` env allowlist; only authenticated Google accounts whose email appears in this comma-separated list can open the admin dashboard.
+- Updated `/api/admin-login`, `/api/start-game`, and `/api/reset-game` to require `Authorization: Bearer <supabase_access_token>` and verify the token user email server-side.
+- Updated `AdminClient` to show Google login, display the authenticated admin email, and send the Supabase access token when starting or resetting the game.
+- `npm run build` passed after the Google admin auth migration.
+
+### 2026-07-09 - Vietnamese text polish
+
+- Replaced newly added no-accent UI/API messages in `AdminClient`, `GameCountdown`, `GameClient`, and `/api/admin-login` with proper Vietnamese UTF-8 text.
+- Re-ran a search for remaining no-accent admin/countdown error strings and mojibake markers in `app`, `components`, and `lib`.
+- `npm run build` passed after the text cleanup.

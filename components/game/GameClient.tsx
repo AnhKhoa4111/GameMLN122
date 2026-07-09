@@ -84,7 +84,7 @@ export default function GameClient() {
     if (!player) return
 
     if (timerInfo.isTimeUp && !player.finish_time) {
-      setError("Da het thoi gian, khong the luu diem moi.")
+      setError("Đã hết thời gian, không thể lưu điểm mới.")
       return
     }
 
@@ -143,7 +143,7 @@ export default function GameClient() {
         {timerInfo.isTimeUp && !player.finish_time && (
           <div className="mt-6 border-4 border-red-300 bg-red-600/40 p-4 text-center">
             <p className="text-xl font-black text-red-100">
-              Het gio! Vui long cho admin xem bang diem.
+              Hết giờ! Vui lòng chờ admin xem bảng điểm.
             </p>
           </div>
         )}

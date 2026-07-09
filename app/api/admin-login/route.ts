@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyAdminRequest } from "@/lib/server/adminAuth"
-import { resetGameState } from "@/lib/server/gameStore"
-import { resetPlayers } from "@/lib/server/playerStore"
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,11 +9,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: admin.error }, { status: 403 })
     }
 
-    await resetPlayers()
-    await resetGameState()
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, email: admin.email })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "Không thể reset game" }, { status: 500 })
+    return NextResponse.json({ error: "Không thể xác thực admin" }, { status: 500 })
   }
 }
