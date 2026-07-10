@@ -9,7 +9,7 @@ export type Stage5PolicyCard = {
 
 export const STAGE5_REQUIRED_SELECTION_COUNT = 4
 export const STAGE5_POINTS_PER_CORRECT_CARD = 25
-export const STAGE5_PERFECT_SCORE = 200
+export const STAGE5_PERFECT_SCORE = 100
 
 
 export const stage5PolicyCards: Stage5PolicyCard[] = [
