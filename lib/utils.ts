@@ -19,3 +19,17 @@ export function formatDurationMinutes(
 
   return `${minutes} phút ${String(seconds).padStart(2, "0")} giây`
 }
+
+export function shuffleArray<T>(array: T[]) {
+  const shuffled = [...array]
+
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+
+    const temp = shuffled[index]
+    shuffled[index] = shuffled[randomIndex]
+    shuffled[randomIndex] = temp
+  }
+
+  return shuffled
+}

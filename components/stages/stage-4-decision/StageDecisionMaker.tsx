@@ -8,6 +8,7 @@ import {
   type Stage4DecisionAnswer,
 } from "@/lib/data/stage4Decisions"
 import { scoreStage4 } from "@/lib/scoring/scoreStage4"
+import { shuffleArray } from "@/lib/utils"
 
 type StageDecisionMakerProps = {
   onCompleted: (score: number) => void
@@ -48,8 +49,9 @@ export default function StageDecisionMaker({
   const [answers, setAnswers] = useState<Record<string, Stage4DecisionAnswer>>({})
   const [confirmedCaseIds, setConfirmedCaseIds] = useState<string[]>([])
   const [isCompleted, setIsCompleted] = useState(false)
+  const randomizedCases = useMemo(() => shuffleArray(stage4CompanyCases), [])
 
-  const activeCase = stage4CompanyCases[activeCaseIndex]
+  const activeCase = randomizedCases[activeCaseIndex]
   const selectedAnswer = answers[activeCase.id]
   const isCaseConfirmed = confirmedCaseIds.includes(activeCase.id)
 
@@ -61,8 +63,9 @@ export default function StageDecisionMaker({
     (option) => option.value === activeCase.correctAnswer
   )
 
+
   const result = useMemo(() => scoreStage4(answers), [answers])
-  const isLastCase = activeCaseIndex === stage4CompanyCases.length - 1
+  const isLastCase = activeCaseIndex === randomizedCases.length - 1
 
   const visual = caseVisuals[activeCase.id] ?? caseVisuals.default
 
@@ -179,7 +182,7 @@ export default function StageDecisionMaker({
 
             <div className="relative border-4 border-[var(--game-white)] bg-[var(--game-yellow)] px-3 py-1.5 text-center font-black text-[var(--game-bg-dark)] shadow-[3px_3px_0px_rgba(0,0,0,0.25)]">
               <span className="absolute -right-2 -top-2 text-xl">⚡</span>
-              {activeCaseIndex + 1}/{stage4CompanyCases.length}
+              {activeCaseIndex + 1}/{randomizedCases.length}
             </div>
           </div>
 
@@ -244,7 +247,7 @@ export default function StageDecisionMaker({
             <div className="mb-2 flex items-center justify-between text-xs font-black">
               <span>Tiến độ xử lý hồ sơ</span>
               <span className="text-[var(--game-yellow)]">
-                {activeCaseIndex + 1}/{stage4CompanyCases.length}
+                {activeCaseIndex + 1}/{randomizedCases.length}
               </span>
             </div>
 
@@ -252,7 +255,7 @@ export default function StageDecisionMaker({
               <div
                 className="h-full bg-[var(--game-yellow)] transition-all duration-500"
                 style={{
-                  width: `${((activeCaseIndex + 1) / stage4CompanyCases.length) * 100}%`,
+                  width: `${((activeCaseIndex + 1) / randomizedCases.length) * 100}%`,
                 }}
               />
             </div>
@@ -296,15 +299,14 @@ export default function StageDecisionMaker({
                   style={{
                     animationDelay: `${0.1 + optionIndex * 0.06}s`,
                   }}
-                  className={`fade-up rounded-[18px] border-4 p-3 text-left text-sm font-black transition ${
-                    shouldReveal && isCorrect
+                  className={`fade-up rounded-[18px] border-4 p-3 text-left text-sm font-black transition ${shouldReveal && isCorrect
                       ? "stage-pop border-green-200 bg-green-600/50 text-white"
                       : shouldReveal && isSelected && !isCorrect
                         ? "stage-shake border-red-200 bg-red-600/50 text-white"
                         : isSelected
                           ? "scale-[1.01] border-[var(--game-yellow)] bg-[var(--game-bg-light)] text-white shadow-[0_0_20px_rgba(250,204,21,0.35)]"
                           : "border-[var(--game-white)] bg-[#3f1048] text-white hover:-translate-y-1 hover:border-[var(--game-yellow)] hover:bg-[var(--game-bg-light)]"
-                  } disabled:cursor-not-allowed`}
+                    } disabled:cursor-not-allowed`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-4 border-[var(--game-white)] bg-[var(--game-yellow)] text-xl text-[var(--game-bg-dark)]">

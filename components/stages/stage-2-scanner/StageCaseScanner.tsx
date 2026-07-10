@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { stage2Cases } from "@/lib/data/stage2Cases"
 import { scoreStage2, type Stage2Answer } from "@/lib/scoring/scoreStage2"
+import { shuffleArray } from "@/lib/utils"
 
 type StageCaseScannerProps = {
   onCompleted: (score: number) => void
@@ -77,9 +78,10 @@ export default function StageCaseScanner({
   const [result, setResult] = useState<ReturnType<typeof scoreStage2> | null>(
     null
   )
+  const randomizedCases = useMemo(() => shuffleArray(stage2Cases), [])
 
-  const currentCase = stage2Cases[currentCaseIndex]
-  const isLastCase = currentCaseIndex === stage2Cases.length - 1
+  const currentCase = randomizedCases[currentCaseIndex]
+  const isLastCase = currentCaseIndex === randomizedCases.length - 1
 
   const visual = caseVisuals[currentCase.id] ?? {
     icon: "📄",
@@ -246,15 +248,14 @@ export default function StageCaseScanner({
                 Tiến độ
               </p>
               <p className="text-xl font-black text-[var(--game-yellow)]">
-                {currentCaseIndex + 1}/{stage2Cases.length}
+                {currentCaseIndex + 1}/{randomizedCases.length}
               </p>
             </div>
           </div>
 
           <div
-            className={`relative overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-[#3f1048] p-3 ${
-              isScanning ? "scanner-glow" : ""
-            }`}
+            className={`relative overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-[#3f1048] p-3 ${isScanning ? "scanner-glow" : ""
+              }`}
           >
             {isScanning && <ScanLine />}
 
@@ -296,9 +297,8 @@ export default function StageCaseScanner({
           <div className="mt-3 grid gap-3 md:grid-cols-[90px_1fr]">
             <div className="relative flex min-h-[80px] items-center justify-center overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-black/20">
               <div
-                className={`text-5xl ${
-                  isScanning ? "scanner-radar" : "case-float"
-                }`}
+                className={`text-5xl ${isScanning ? "scanner-radar" : "case-float"
+                  }`}
               >
                 📡
               </div>
@@ -311,11 +311,10 @@ export default function StageCaseScanner({
             <div className="flex items-center rounded-[18px] border-4 border-[var(--game-white)] bg-black/20 p-3">
               <div className="w-full">
                 <p
-                  className={`text-center text-base font-black tracking-[0.14em] ${
-                    isScanning
+                  className={`text-center text-base font-black tracking-[0.14em] ${isScanning
                       ? "animate-pulse text-[var(--game-yellow)]"
                       : "text-[var(--game-yellow)]"
-                  }`}
+                    }`}
                 >
                   {isScanning
                     ? "ĐANG QUÉT..."
@@ -328,7 +327,7 @@ export default function StageCaseScanner({
                   <div
                     className="h-full bg-[var(--game-yellow)] transition-all duration-500"
                     style={{
-                      width: `${((currentCaseIndex + (isScanned ? 1 : 0)) / stage2Cases.length) * 100}%`,
+                      width: `${((currentCaseIndex + (isScanned ? 1 : 0)) / randomizedCases.length) * 100}%`,
                     }}
                   />
                 </div>
@@ -360,15 +359,14 @@ export default function StageCaseScanner({
                   style={{
                     animationDelay: `${0.12 + optionIndex * 0.06}s`,
                   }}
-                  className={`fade-up relative overflow-hidden rounded-[18px] border-4 px-3 py-3 text-left text-sm font-black transition-all duration-200 ${
-                    showCorrect
+                  className={`fade-up relative overflow-hidden rounded-[18px] border-4 px-3 py-3 text-left text-sm font-black transition-all duration-200 ${showCorrect
                       ? "stage-pop border-green-300 bg-green-600/50 text-white"
                       : showWrong
                         ? "stage-shake border-red-300 bg-red-600/50 text-white"
                         : isSelected
                           ? "scale-[1.01] border-[var(--game-yellow)] bg-[var(--game-bg-light)] text-white shadow-[0_0_20px_rgba(250,204,21,0.35)]"
                           : "border-[var(--game-white)] bg-[#3f1048] text-white hover:-translate-y-1 hover:border-[var(--game-yellow)] hover:bg-[var(--game-bg-light)]"
-                  } disabled:cursor-not-allowed`}
+                    } disabled:cursor-not-allowed`}
                 >
                   {isScanning && isSelected && <ScanLine />}
 
@@ -400,9 +398,8 @@ export default function StageCaseScanner({
           )}
 
           <div
-            className={`relative mt-3 overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] p-3 ${
-              isScanning ? "scanner-glow" : ""
-            }`}
+            className={`relative mt-3 overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] p-3 ${isScanning ? "scanner-glow" : ""
+              }`}
           >
             {isScanning && <ScanLine />}
 
@@ -424,7 +421,7 @@ export default function StageCaseScanner({
             <div className="mb-2 flex items-center justify-between text-xs font-black">
               <span>Tiến độ hồ sơ</span>
               <span className="text-[var(--game-yellow)]">
-                {currentCaseIndex + 1}/{stage2Cases.length}
+                {currentCaseIndex + 1}/{randomizedCases.length}
               </span>
             </div>
 
@@ -432,7 +429,7 @@ export default function StageCaseScanner({
               <div
                 className="h-full bg-[var(--game-yellow)] transition-all duration-500"
                 style={{
-                  width: `${((currentCaseIndex + 1) / stage2Cases.length) * 100}%`,
+                  width: `${((currentCaseIndex + 1) / randomizedCases.length) * 100}%`,
                 }}
               />
             </div>
@@ -473,11 +470,10 @@ function ScanResultModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 backdrop-blur-sm">
       <div
-        className={`case-enter relative w-full max-w-[560px] overflow-hidden rounded-[28px] border-4 p-5 text-center shadow-[10px_10px_0px_rgba(0,0,0,0.35)] ${
-          isCorrect
+        className={`case-enter relative w-full max-w-[560px] overflow-hidden rounded-[28px] border-4 p-5 text-center shadow-[10px_10px_0px_rgba(0,0,0,0.35)] ${isCorrect
             ? "border-green-300 bg-[#245543]"
             : "border-red-300 bg-[#5a1f35]"
-        }`}
+          }`}
       >
         <div className="pointer-events-none absolute -right-8 -top-8 text-8xl opacity-10">
           {isCorrect ? "✅" : "❌"}
