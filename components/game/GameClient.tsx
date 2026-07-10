@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import GameCountdown from "@/components/game/GameCountdown"
 import StageTimeline from "@/components/stages/stage-1-timeline/StageTimeline"
@@ -122,15 +122,24 @@ export default function GameClient() {
 
   return (
     <main className="min-h-screen bg-[var(--game-bg)] text-[var(--game-white)]">
-      <header className="border-b-4 border-[var(--game-white)] bg-[var(--game-bg-dark)] px-4 py-4">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex items-start justify-between gap-4">
+      <header className="sticky top-0 z-[9998] border-b-4 border-[var(--game-white)] bg-[var(--game-bg-dark)]/95 px-4 py-4 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4">
+          <div className="grid grid-cols-[1fr_1.3fr_1fr] items-center gap-4">
             <div>
               <p className="text-sm font-bold text-white/70">Người chơi</p>
               <p className="text-xl font-black text-[var(--game-yellow)]">
                 {player.player_name}
               </p>
             </div>
+
+            {!isGameCompleted && player.start_time ? (
+              <GameCountdown
+                startTime={player.start_time}
+                onTimeUp={handleTimeUp}
+              />
+            ) : (
+              <div />
+            )}
 
             <div className="text-right">
               <p className="text-sm font-bold text-white/70">Tổng điểm</p>
@@ -140,10 +149,6 @@ export default function GameClient() {
               </p>
             </div>
           </div>
-
-          {!isGameCompleted && player.start_time && (
-            <GameCountdown startTime={player.start_time} onTimeUp={handleTimeUp} />
-          )}
         </div>
       </header>
 

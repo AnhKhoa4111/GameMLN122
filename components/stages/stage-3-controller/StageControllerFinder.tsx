@@ -57,7 +57,7 @@ function getStage3PotentialScore(flippedCount: number) {
 
 const guideSteps = [
   "Lật thẻ để lấy manh mối",
-  "Đọc gợi ý ngắn bên phải",
+  "Đọc gợi ý bên dưới hoặc chi tiết thẻ",
   "Chọn chủ thể chi phối thật sự",
 ]
 

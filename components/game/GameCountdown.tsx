@@ -81,22 +81,18 @@ export default function GameCountdown({
   }, [remainingMs])
 
   return (
-    <div className="mt-4">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-bold text-white/70">Thời gian còn lại</p>
-          <p
-            className={`text-4xl font-black leading-none ${timerInfo.textColorClass}`}
-          >
-            {timerInfo.timeText}
-          </p>
-          <p className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-white/70">
-            {timerInfo.statusText}
-          </p>
-        </div>
+    <div className="flex w-full flex-col items-center">
+      <div className="text-center">
+        <p className="text-sm font-bold text-white/70">Thời gian còn lại</p>
 
-        <p className="text-right text-xs font-bold uppercase tracking-[0.18em] text-white/50">
-          Countdown
+        <p
+          className={`text-4xl font-black leading-none ${timerInfo.textColorClass}`}
+        >
+          {timerInfo.timeText}
+        </p>
+
+        <p className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-white/70">
+          {timerInfo.statusText}
         </p>
       </div>
 
