@@ -11,6 +11,8 @@ database schema, scoring, authentication, or UI architecture changes.
 - Players do not log in. They enter a display name, join `/lobby`, then play at `/game`.
 - Player identity is stored locally with `localStorage["mln122-player-id"]`.
 - Saved players are validated through `GET /api/player-state?id=...` before routing.
+- After the game starts, `/api/join-lobby` blocks new players. Only players
+  who already have a saved player id can resume through `/api/player-state`.
 - Admin uses Supabase Google Auth. `/admin` only opens for emails listed in `ADMIN_EMAILS`.
 - Start/reset admin actions require `Authorization: Bearer <supabase_access_token>`.
 - `start_time` is set only when admin starts the game.

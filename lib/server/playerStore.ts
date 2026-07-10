@@ -31,6 +31,11 @@ export async function getPlayer(playerId: string): Promise<Player | null> {
   return (data as Player | null) ?? null
 }
 
+export async function deletePlayer(playerId: string): Promise<void> {
+  const { error } = await supabase.from("players").delete().eq("id", playerId)
+  if (error) throw error
+}
+
 export async function getPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
