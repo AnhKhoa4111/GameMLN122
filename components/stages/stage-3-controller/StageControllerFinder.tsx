@@ -174,7 +174,7 @@ export default function StageControllerFinder({
         <div className="fade-up mx-auto inline-flex items-center gap-2 border-4 border-[var(--game-white)] bg-[var(--game-bg-dark)] px-4 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]">
           <span className="animate-bounce text-xl">🕵️</span>
           <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-            Stage 3
+            Màn 3
           </p>
           <span className="animate-bounce text-xl [animation-delay:0.2s]">
             🧩
@@ -536,7 +536,7 @@ function ResultModal({
         </div>
 
         <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-          Hoàn thành Stage 3
+          Hoàn thành Màn 3
         </p>
 
         <h2 className="mt-2 text-2xl font-black uppercase leading-tight md:text-3xl">
@@ -649,7 +649,7 @@ function FlipWarningModal({
         </div>
 
         <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-          Cảnh báo điểm Stage 3
+          Cảnh báo điểm Màn 3
         </p>
 
         <h2 className="mt-2 text-2xl font-black uppercase leading-tight">

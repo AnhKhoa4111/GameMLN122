@@ -152,7 +152,7 @@ export default function StageBoss({
         <div className="fade-up mx-auto inline-flex items-center gap-2 border-4 border-[var(--game-white)] bg-[var(--game-bg-dark)] px-4 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]">
           <span className="animate-bounce text-xl">🇻🇳</span>
           <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-            Stage 5 - Boss Room
+            Màn 5 - Boss Room
           </p>
           <span className="animate-bounce text-xl [animation-delay:0.2s]">
             🏛️
@@ -216,8 +216,9 @@ export default function StageBoss({
           />
           <RuleCard
             icon="🏆"
-            title="Perfect"
-            value={`Đúng cả 4 lá được x2 thành ${STAGE5_PERFECT_SCORE} điểm.`}
+            title="Perfect x2"
+            value={`Đúng cả 4 lá: ${STAGE5_PERFECT_SCORE} x2 = ${STAGE5_PERFECT_SCORE * 2
+              } điểm.`}
           />
         </div>
 
@@ -411,17 +412,22 @@ function BossResultModal({
 
           <div className="rounded-2xl border-4 border-yellow-300 bg-yellow-500/20 p-2">
             <p className="text-2xl">🏆</p>
-            <p className="mt-1 text-xs font-black text-white/75">Perfect</p>
+            <p className="mt-1 text-xs font-black text-white/75">Bonus x2</p>
             <p className="text-xl font-black text-[var(--game-yellow)]">
-              {result.isPerfect ? "x2" : "Không"}
+              {result.isPerfect ? `+${result.bonusScore}` : "Không"}
             </p>
           </div>
         </div>
 
         {result.isPerfect ? (
-          <p className="relative mt-3 rounded-2xl bg-yellow-300/15 px-3 py-2 text-sm font-black text-[var(--game-yellow)]">
-            Hoàn hảo! Bạn đã chọn đủ 4 chính sách bảo vệ chủ quyền kinh tế.
-          </p>
+          <div className="relative mt-3 rounded-2xl border-4 border-yellow-300 bg-yellow-300/15 px-3 py-3 text-sm font-black text-[var(--game-yellow)]">
+            <p>
+              Hoàn hảo! Bạn đã chọn đúng cả 4 chính sách bảo vệ chủ quyền kinh tế.
+            </p>
+            <p className="mt-1 text-base">
+              Bonus Perfect: {result.baseScore} x{result.multiplier} = {result.score} điểm!
+            </p>
+          </div>
         ) : (
           <p className="relative mt-3 rounded-2xl bg-white/10 px-3 py-2 text-sm font-semibold text-white/80">
             Bạn đã hoàn thành Boss Room. Hãy lưu kết quả để kết thúc game.

@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 import {
   stage1TimelineItems,
   type Stage1TimelineItem,
@@ -90,7 +91,17 @@ export default function StageTimeline({
     null,
     null,
   ])
+
   const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dragPreview, setDragPreview] = useState<{
+    cardId: string
+    x: number
+    y: number
+    width: number
+    offsetX: number
+    offsetY: number
+  } | null>(null)
+
   const [hoveredSlotIndex, setHoveredSlotIndex] = useState<number | null>(null)
   const [lastDroppedSlotIndex, setLastDroppedSlotIndex] = useState<number | null>(
     null
@@ -98,6 +109,7 @@ export default function StageTimeline({
   const [result, setResult] = useState<ReturnType<typeof scoreStage1> | null>(
     null
   )
+  const [isMounted, setIsMounted] = useState(false)
 
   const selectedCount = slots.filter(Boolean).length
   const isFull = selectedCount === 6
@@ -107,6 +119,53 @@ export default function StageTimeline({
       stage1TimelineItems.map((item) => [item.id, item])
     ) as Record<string, Stage1TimelineItem>
   }, [])
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  function clearDragState() {
+    setDraggedId(null)
+    setHoveredSlotIndex(null)
+    setDragPreview(null)
+  }
+
+  function getSlotIndexFromPoint(x: number, y: number) {
+    const element = document.elementFromPoint(x, y)
+    const slotElement = element?.closest("[data-stage-slot]")
+
+    if (!slotElement) return null
+
+    const slotIndex = Number(slotElement.getAttribute("data-stage-slot"))
+
+    if (Number.isNaN(slotIndex)) return null
+
+    return slotIndex
+  }
+
+  function handleCardPointerDown(
+    event: React.PointerEvent<HTMLDivElement>,
+    cardId: string
+  ) {
+    if (result) return
+
+    if (event.button !== 0) return
+
+    event.preventDefault()
+
+    const rect = event.currentTarget.getBoundingClientRect()
+
+    setDraggedId(cardId)
+
+    setDragPreview({
+      cardId,
+      x: event.clientX,
+      y: event.clientY,
+      width: rect.width,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    })
+  }
 
   function handleDrop(slotIndex: number) {
     if (!draggedId || result) return
@@ -142,9 +201,48 @@ export default function StageTimeline({
       return nextCards
     })
 
-    setDraggedId(null)
-    setHoveredSlotIndex(null)
+    clearDragState()
   }
+
+  useEffect(() => {
+    if (!draggedId || !dragPreview) return
+
+    function handlePointerMove(event: PointerEvent) {
+      setDragPreview((current) => {
+        if (!current) return null
+
+        return {
+          ...current,
+          x: event.clientX,
+          y: event.clientY,
+        }
+      })
+
+      const slotIndex = getSlotIndexFromPoint(event.clientX, event.clientY)
+      setHoveredSlotIndex(slotIndex)
+    }
+
+    function handlePointerUp(event: PointerEvent) {
+      const slotIndex = getSlotIndexFromPoint(event.clientX, event.clientY)
+
+      if (slotIndex !== null) {
+        handleDrop(slotIndex)
+        return
+      }
+
+      clearDragState()
+    }
+
+    window.addEventListener("pointermove", handlePointerMove)
+    window.addEventListener("pointerup", handlePointerUp)
+    window.addEventListener("pointercancel", clearDragState)
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove)
+      window.removeEventListener("pointerup", handlePointerUp)
+      window.removeEventListener("pointercancel", clearDragState)
+    }
+  }, [draggedId, dragPreview, slots, result])
 
   function handleRemoveFromSlot(slotIndex: number) {
     if (result) return
@@ -171,6 +269,71 @@ export default function StageTimeline({
     setResult(scoreResult)
   }
 
+  function renderCardContent(card: Stage1TimelineItem) {
+    const visual = cardVisuals[card.id]
+
+    return (
+      <>
+        <div
+          className={`absolute inset-y-0 left-0 w-2 bg-gradient-to-b ${
+            visual?.color ?? "from-yellow-300 to-orange-500"
+          }`}
+        />
+
+        <div className="absolute right-2 top-2 rounded-full bg-black/25 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/70">
+          Kéo
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-4 border-[var(--game-white)] bg-[#3f1048] text-3xl shadow-[3px_3px_0px_rgba(0,0,0,0.25)] transition group-hover:scale-110 group-hover:rotate-3">
+            {visual?.icon ?? "📌"}
+          </div>
+
+          <div className="min-w-0 pr-8">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--game-yellow)]">
+              {visual?.character ?? "Nhân vật"}
+            </p>
+
+            <h3 className="mt-0.5 text-base font-black leading-tight">
+              {card.title}
+            </h3>
+
+            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-white/60">
+              {visual?.role ?? "Dữ kiện"}
+            </p>
+
+            <p className="mt-1 line-clamp-1 rounded-lg bg-black/20 px-2 py-1 text-xs font-semibold italic text-white/80">
+              “{visual?.quote ?? card.description}”
+            </p>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  function renderFloatingDragCard() {
+    if (!isMounted || !dragPreview || !draggedId) return null
+
+    const card = cardsById[dragPreview.cardId]
+    if (!card) return null
+
+    return createPortal(
+      <div
+        className="pointer-events-none fixed z-[99999]"
+        style={{
+          left: dragPreview.x - dragPreview.offsetX,
+          top: dragPreview.y - dragPreview.offsetY,
+          width: dragPreview.width,
+        }}
+      >
+        <div className="relative cursor-grabbing select-none touch-none overflow-hidden rounded-[18px] border-4 border-[var(--game-yellow)] bg-[var(--game-bg-light)] p-3 shadow-[0_0_28px_rgba(250,204,21,0.65)]">
+          {renderCardContent(card)}
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
   return (
     <section className="stage-enter relative mx-auto max-w-6xl overflow-hidden px-4 py-4 text-[var(--game-white)]">
       <div className="pointer-events-none absolute right-[-100px] top-64 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl" />
@@ -180,7 +343,7 @@ export default function StageTimeline({
         <div className="fade-up mx-auto inline-flex items-center gap-2 border-4 border-[var(--game-white)] bg-[var(--game-bg-dark)] px-4 py-1.5 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]">
           <span className="animate-bounce text-xl">📜</span>
           <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--game-yellow)]">
-            Stage 1
+            Màn 1
           </p>
           <span className="animate-bounce text-xl [animation-delay:0.2s]">
             🔍
@@ -256,60 +419,25 @@ export default function StageTimeline({
           <div className="grid gap-2">
             {availableCards.length > 0 ? (
               availableCards.map((card, index) => {
-                const visual = cardVisuals[card.id]
                 const isDragging = draggedId === card.id
 
                 return (
                   <div
                     key={card.id}
-                    draggable={!result}
-                    onDragStart={() => setDraggedId(card.id)}
-                    onDragEnd={() => {
-                      setDraggedId(null)
-                      setHoveredSlotIndex(null)
-                    }}
+                    onPointerDown={(event) =>
+                      handleCardPointerDown(event, card.id)
+                    }
                     style={{
                       animationDelay: `${0.08 + index * 0.06}s`,
+                      visibility: isDragging ? "hidden" : "visible",
                     }}
-                    className={`fade-up group relative cursor-grab overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] p-3 shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-all duration-200 active:cursor-grabbing ${
+                    className={`fade-up group relative cursor-grab select-none touch-none overflow-hidden rounded-[18px] border-4 border-[var(--game-white)] bg-[var(--game-bg-light)] p-3 shadow-[4px_4px_0px_rgba(0,0,0,0.25)] transition-all duration-200 active:cursor-grabbing ${
                       isDragging
-                        ? "scale-[1.03] rotate-1 border-[var(--game-yellow)] opacity-80 shadow-[0_0_24px_rgba(250,204,21,0.45)]"
+                        ? ""
                         : "hover:-translate-y-1 hover:rotate-[0.5deg] hover:border-[var(--game-yellow)] hover:shadow-[6px_6px_0px_rgba(0,0,0,0.3)]"
                     }`}
                   >
-                    <div
-                      className={`absolute inset-y-0 left-0 w-2 bg-gradient-to-b ${
-                        visual?.color ?? "from-yellow-300 to-orange-500"
-                      }`}
-                    />
-
-                    <div className="absolute right-2 top-2 rounded-full bg-black/25 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-white/70">
-                      Kéo
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-4 border-[var(--game-white)] bg-[#3f1048] text-3xl shadow-[3px_3px_0px_rgba(0,0,0,0.25)] transition group-hover:scale-110 group-hover:rotate-3">
-                        {visual?.icon ?? "📌"}
-                      </div>
-
-                      <div className="min-w-0 pr-8">
-                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--game-yellow)]">
-                          {visual?.character ?? "Nhân vật"}
-                        </p>
-
-                        <h3 className="mt-0.5 text-base font-black leading-tight">
-                          {card.title}
-                        </h3>
-
-                        <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-white/60">
-                          {visual?.role ?? "Dữ kiện"}
-                        </p>
-
-                        <p className="mt-1 line-clamp-1 rounded-lg bg-black/20 px-2 py-1 text-xs font-semibold italic text-white/80">
-                          “{visual?.quote ?? card.description}”
-                        </p>
-                      </div>
-                    </div>
+                    {renderCardContent(card)}
                   </div>
                 )
               })
@@ -357,10 +485,14 @@ export default function StageTimeline({
               const card = cardId ? cardsById[cardId] : null
 
               const isWrong =
-                result !== null && card !== null && card.correctOrder !== index + 1
+                result !== null &&
+                card !== null &&
+                card.correctOrder !== index + 1
 
               const isCorrect =
-                result !== null && card !== null && card.correctOrder === index + 1
+                result !== null &&
+                card !== null &&
+                card.correctOrder === index + 1
 
               const isHovering = hoveredSlotIndex === index
               const isRecentlyDropped = lastDroppedSlotIndex === index
@@ -369,12 +501,7 @@ export default function StageTimeline({
               return (
                 <div
                   key={index}
-                  onDragOver={(event) => {
-                    event.preventDefault()
-                    if (!result) setHoveredSlotIndex(index)
-                  }}
-                  onDragLeave={() => setHoveredSlotIndex(null)}
-                  onDrop={() => handleDrop(index)}
+                  data-stage-slot={index}
                   className={`relative min-h-[78px] rounded-[18px] border-4 p-3 transition-all duration-200 ${
                     isCorrect
                       ? "border-green-300 bg-green-600/40 shadow-[0_0_20px_rgba(74,222,128,0.3)]"
@@ -388,11 +515,13 @@ export default function StageTimeline({
                   <div className="flex items-center gap-3">
                     <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] text-lg font-black text-[var(--game-bg-dark)] shadow-[3px_3px_0px_rgba(0,0,0,0.25)]">
                       {index + 1}
+
                       {isCorrect && (
                         <span className="absolute -right-2 -top-2 text-xl">
                           ✅
                         </span>
                       )}
+
                       {isWrong && (
                         <span className="absolute -right-2 -top-2 text-xl">
                           ❌
@@ -414,9 +543,11 @@ export default function StageTimeline({
                           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--game-yellow)]">
                             Mốc {index + 1} · {visual?.character ?? "Dữ kiện"}
                           </p>
+
                           <h3 className="mt-0.5 text-base font-black">
                             {card.title}
                           </h3>
+
                           <p className="mt-0.5 line-clamp-1 text-xs font-semibold text-white/80">
                             {card.description}
                           </p>
@@ -471,6 +602,8 @@ export default function StageTimeline({
         </div>
       </div>
 
+      {renderFloatingDragCard()}
+
       {result && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/75 px-4 backdrop-blur-sm">
           {confettiItems.map((item, index) => (
@@ -492,6 +625,7 @@ export default function StageTimeline({
 
             <div className="relative mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-full border-4 border-[var(--game-white)] bg-[var(--game-yellow)] text-5xl shadow-[5px_5px_0px_rgba(0,0,0,0.35)]">
               {result.isPerfect ? "🏆" : "📊"}
+
               <span className="absolute -right-3 -top-2 animate-ping text-2xl">
                 ✨
               </span>
@@ -520,7 +654,9 @@ export default function StageTimeline({
             <div className="relative mt-3 grid grid-cols-2 gap-3">
               <div className="rounded-2xl border-4 border-green-300 bg-green-500/25 p-2">
                 <p className="text-2xl">✅</p>
+
                 <p className="mt-1 text-xs font-black text-white/75">Đúng</p>
+
                 <p className="text-xl font-black text-green-200">
                   {result.correctCount}/6
                 </p>
@@ -528,7 +664,9 @@ export default function StageTimeline({
 
               <div className="rounded-2xl border-4 border-red-300 bg-red-500/25 p-2">
                 <p className="text-2xl">❌</p>
+
                 <p className="mt-1 text-xs font-black text-white/75">Sai</p>
+
                 <p className="text-xl font-black text-red-200">
                   {result.wrongCount}/6
                 </p>

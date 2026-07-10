@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
+import GameBackgroundMusic from "@/components/game/GameBackgroundMusic"
 
 export const metadata: Metadata = {
   title: "Giải Mã Tư Bản",
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className="min-h-screen bg-[var(--game-bg)] text-[var(--game-white)] antialiased">
+        <GameBackgroundMusic />
         {children}
       </body>
     </html>
