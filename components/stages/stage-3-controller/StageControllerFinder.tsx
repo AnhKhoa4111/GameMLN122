@@ -281,11 +281,12 @@ export default function StageControllerFinder({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
-                  {activeCard.detailContent.slice(0, 2).map((line) => (
+                <div className="grid max-h-[260px] gap-2 overflow-y-auto pr-1">
+                  {activeCard.detailContent.map((line) => (
                     <p
                       key={line}
-                      className="line-clamp-2 rounded-xl border-l-4 border-[var(--game-yellow)] bg-white/10 px-3 py-2 text-sm font-semibold leading-relaxed text-white/90"
+                      title={line}
+                      className="rounded-xl border-l-4 border-[var(--game-yellow)] bg-white/10 px-3 py-2 text-sm font-semibold leading-relaxed text-white/90"
                     >
                       {line}
                     </p>

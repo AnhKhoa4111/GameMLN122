@@ -116,7 +116,7 @@ export const stage3EvidenceCards: Stage3EvidenceCard[] = [
     ],
     detailContent: [
       "Silver Lion Fund không xuất hiện trong danh sách cổ đông công khai của Fintech X.",
-      "Nắm cổ phần ưu đãi trong Blue Star Tech.",
+      "Nắm cổ phần ưu đãi ở Blue Star Tech, đối tác công nghệ của Fintech X.",
       "Có đại diện trong nhóm cố vấn đầu tư của Fintech X.",
       "Có liên kết lợi ích với một phần cổ đông nhỏ lẻ.",
     ],
